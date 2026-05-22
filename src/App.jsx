@@ -6,11 +6,15 @@ import './index.css';
 export default function App() {
   const [currentLevel, setCurrentLevel] = useState(0); 
   const [gameState, setGameState] = useState('start'); // start, playing, levelup, gameover, win, leaderboard
-  const [gameMode, setGameMode] = useState('hebrew'); // 'hebrew' | 'english'
+  const [gameMode, setGameMode] = useState('hebrew'); // 'hebrew' | 'english' | 'havarot'
   
   const [score, setScore] = useState(0);
   const [prizes, setPrizes] = useState([]);
   const [playerName, setPlayerName] = useState('');
+  
+  // Leaderboard state
+  const [leaderboards, setLeaderboards] = useState({ hebrew: [], english: [], havarot: [] });
+  const [isLoadingScores, setIsLoadingScores] = useState(false);
 
   const startGame = (mode) => {
     setGameMode(mode);
@@ -22,7 +26,6 @@ export default function App() {
   };
 
   const handleLevelComplete = () => {
-    // Add prize for completing the level
     const newPrize = LEVEL_PRIZES[currentLevel - 1] || '🌟';
     setPrizes(prev => [...prev, newPrize]);
 
@@ -48,13 +51,32 @@ export default function App() {
     setScore(0);
   };
 
-  const openLeaderboard = () => {
+  const openLeaderboard = async () => {
     setGameState('leaderboard');
+    setIsLoadingScores(true);
+    
+    // Fetch all 3 asynchronously
+    const [hebrewScores, englishScores, havarotScores] = await Promise.all([
+      getLeaderboard('hebrew'),
+      getLeaderboard('english'),
+      getLeaderboard('havarot')
+    ]);
+    
+    setLeaderboards({
+      hebrew: hebrewScores,
+      english: englishScores,
+      havarot: havarotScores
+    });
+    
+    setIsLoadingScores(false);
   };
 
-  const handleSaveScore = () => {
+  const handleSaveScore = async () => {
     if (!playerName.trim()) return;
-    saveScore(playerName.trim(), score, gameMode);
+    
+    // Disable button to prevent double-click
+    setPlayerName(''); // Optimistic clear
+    await saveScore(playerName.trim(), score, gameMode);
     openLeaderboard();
   };
 
@@ -64,43 +86,45 @@ export default function App() {
     </button>
   );
 
-  const renderLeaderboard = () => {
-    const hebrewScores = getLeaderboard('hebrew');
-    const englishScores = getLeaderboard('english');
-
+  const renderLeaderboardList = (scores) => {
+    if (scores.length === 0) return <p>אין עדיין שיאים!</p>;
     return (
-      <div className="card text-center leaderboard-card" dir="rtl">
+      <ul className="leaderboard-list">
+        {scores.map((s, i) => (
+          <li key={i}>
+            <span className="rank">{i + 1}.</span> 
+            <span className="name">{s.name}</span> 
+            <span className="score">{s.score} נק'</span>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  const renderLeaderboard = () => {
+    return (
+      <div className="card text-center leaderboard-card" dir="rtl" style={{ maxWidth: '900px' }}>
         <HomeButton />
         <h1 className="title text-gold">🏆 טבלת מנצחים 🏆</h1>
         
-        <div className="leaderboard-container">
-          <div className="leaderboard-col">
-            <h2 className="subtitle">עברית 🇮🇱</h2>
-            {hebrewScores.length === 0 ? <p>אין עדיין שיאים!</p> : null}
-            <ul className="leaderboard-list">
-              {hebrewScores.map((s, i) => (
-                <li key={i}>
-                  <span className="rank">{i + 1}.</span> 
-                  <span className="name">{s.name}</span> 
-                  <span className="score">{s.score} נק'</span>
-                </li>
-              ))}
-            </ul>
+        {isLoadingScores ? (
+          <div className="subtitle" style={{ margin: '40px 0' }}>טוען נתונים מהשרת... ⏳</div>
+        ) : (
+          <div className="leaderboard-container">
+            <div className="leaderboard-col">
+              <h2 className="subtitle">עברית 🇮🇱</h2>
+              {renderLeaderboardList(leaderboards.hebrew)}
+            </div>
+            <div className="leaderboard-col">
+              <h2 className="subtitle" style={{ color: '#805ad5' }}>הברות 🧩</h2>
+              {renderLeaderboardList(leaderboards.havarot)}
+            </div>
+            <div className="leaderboard-col">
+              <h2 className="subtitle">English 🇺🇸</h2>
+              {renderLeaderboardList(leaderboards.english)}
+            </div>
           </div>
-          <div className="leaderboard-col">
-            <h2 className="subtitle">English 🇺🇸</h2>
-            {englishScores.length === 0 ? <p>אין עדיין שיאים!</p> : null}
-            <ul className="leaderboard-list">
-              {englishScores.map((s, i) => (
-                <li key={i}>
-                  <span className="rank">{i + 1}.</span> 
-                  <span className="name">{s.name}</span> 
-                  <span className="score">{s.score} נק'</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        )}
       </div>
     );
   };
@@ -141,7 +165,10 @@ export default function App() {
           <p className="subtitle">בחרו את סוג המשחק שתרצו לשחק:</p>
           <div className="mode-selection">
             <button className="primary-btn hebrew-btn" onClick={() => startGame('hebrew')}>
-              משחק ניקוד (עברית) 🇮🇱
+              משחק ניקוד (שמות הניקוד) 🇮🇱
+            </button>
+            <button className="primary-btn" style={{backgroundColor: '#805ad5'}} onClick={() => startGame('havarot')}>
+              משחק הברות (אות + ניקוד) 🧩
             </button>
             <button className="primary-btn english-btn" onClick={() => startGame('english')}>
               משחק אותיות (English) 🇺🇸
@@ -192,7 +219,7 @@ export default function App() {
           <p className="subtitle">טעיתם או שהזמן נגמר.</p>
           {score > 0 && renderSaveScore()}
           <br/>
-          <button className="primary-btn" onClick={() => startGame(gameMode)}>נסו שוב מהתחלה</button>
+          <button className="primary-btn" style={{marginTop: '10px'}} onClick={() => startGame(gameMode)}>נסו שוב מהתחלה</button>
         </div>
       );
     }
@@ -206,7 +233,7 @@ export default function App() {
           <p className="subtitle">סיימתם את כל השלבים בהצלחה רבה!</p>
           {renderSaveScore()}
           <br/>
-          <button className="primary-btn" onClick={() => startGame(gameMode)}>שחקו שוב</button>
+          <button className="primary-btn" style={{marginTop: '10px'}} onClick={() => startGame(gameMode)}>שחקו שוב</button>
         </div>
       );
     }

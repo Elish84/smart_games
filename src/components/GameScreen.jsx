@@ -1,15 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { OptionButton } from './OptionButton';
-import { NIKUD_LIST, ENGLISH_LIST } from '../utils/gameData';
+import { NIKUD_LIST, ENGLISH_LIST, generateHavarotPool, generateHavarotOptions } from '../utils/gameData';
 import { speak, playSuccessSound, playFailSound } from '../utils/audio';
 
 export const GameScreen = ({ levelData, gameMode, score, setScore, onLevelComplete, onGameOver, onHome }) => {
   const isEnglish = gameMode === 'english';
-  const POOL = isEnglish ? ENGLISH_LIST : NIKUD_LIST;
-  const lang = isEnglish ? 'en-US' : 'he-IL';
-  const titleText = isEnglish ? 'איזו אות זאת?' : 'איזה סימן ניקוד זה?';
+  const isHavarot = gameMode === 'havarot';
+  
+  // Decide the pool based on the game mode
+  let initialPool;
+  if (isEnglish) {
+    initialPool = [...ENGLISH_LIST];
+  } else if (isHavarot) {
+    initialPool = generateHavarotPool(10); // 10 questions per level for Havarot
+  } else {
+    initialPool = [...NIKUD_LIST];
+  }
 
-  const [remainingNikud, setRemainingNikud] = useState([...POOL]);
+  const lang = isEnglish ? 'en-US' : 'he-IL';
+  let titleText = 'איזה סימן ניקוד זה?';
+  if (isEnglish) titleText = 'איזו אות זאת?';
+  if (isHavarot) titleText = 'איזו הברה שמעת?';
+
+  const [remainingNikud, setRemainingNikud] = useState(initialPool);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [options, setOptions] = useState([]);
   const [timeLeft, setTimeLeft] = useState(levelData.timeLimit);
@@ -18,7 +31,7 @@ export const GameScreen = ({ levelData, gameMode, score, setScore, onLevelComple
   const timerRef = useRef(null);
 
   useEffect(() => {
-    startNextQuestion([...POOL]);
+    startNextQuestion(initialPool);
     return () => clearInterval(timerRef.current);
   }, []);
 
@@ -31,27 +44,32 @@ export const GameScreen = ({ levelData, gameMode, score, setScore, onLevelComple
     };
   };
 
-  const startNextQuestion = (nikudPool) => {
-    if (nikudPool.length === 0) {
+  const startNextQuestion = (pool) => {
+    if (pool.length === 0) {
       onLevelComplete();
       return;
     }
 
-    const randomIndex = Math.floor(Math.random() * nikudPool.length);
-    const question = nikudPool[randomIndex];
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const question = pool[randomIndex];
     
-    const others = POOL.filter(n => n.id !== question.id);
-    const shuffledOthers = others.sort(() => 0.5 - Math.random()).slice(0, 2);
-    
-    const rawOptions = [question, ...shuffledOthers].sort(() => 0.5 - Math.random());
-    const currentOptions = rawOptions.map(opt => randomizeCase(opt));
+    let currentOptions = [];
+
+    if (isHavarot) {
+      currentOptions = generateHavarotOptions(question);
+    } else {
+      const others = initialPool.filter(n => n.id !== question.id);
+      const shuffledOthers = others.sort(() => 0.5 - Math.random()).slice(0, 2);
+      const rawOptions = [question, ...shuffledOthers].sort(() => 0.5 - Math.random());
+      currentOptions = rawOptions.map(opt => randomizeCase(opt));
+    }
     
     setCurrentQuestion(question);
     setOptions(currentOptions);
     setTimeLeft(levelData.timeLimit);
     setIsAnswering(false);
     setAnswerStatus(null);
-    setRemainingNikud(nikudPool);
+    setRemainingNikud(pool);
 
     clearInterval(timerRef.current);
     
@@ -88,7 +106,6 @@ export const GameScreen = ({ levelData, gameMode, score, setScore, onLevelComple
       playSuccessSound();
       setAnswerStatus({ selectedId: nikud.id, status: 'correct' });
       
-      // Calculate score based on speed
       const timeBonus = Math.floor(timeLeft / 100);
       setScore(prev => prev + 10 + timeBonus);
 
