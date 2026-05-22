@@ -101,10 +101,9 @@ export const LEVELS = [
 
 export const saveScore = async (name, score, gameMode) => {
   try {
-    await addDoc(collection(db, 'leaderboards'), {
+    await addDoc(collection(db, `leaderboard_${gameMode}`), {
       name,
       score,
-      gameMode,
       date: new Date().toISOString()
     });
     return true;
@@ -118,8 +117,7 @@ export const saveScore = async (name, score, gameMode) => {
 export const getLeaderboard = async (gameMode) => {
   try {
     const q = query(
-      collection(db, 'leaderboards'),
-      where('gameMode', '==', gameMode),
+      collection(db, `leaderboard_${gameMode}`),
       orderBy('score', 'desc'),
       limit(10)
     );
