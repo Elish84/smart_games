@@ -58,17 +58,39 @@ export const NIKUD_SYMBOLS = [
   { id: 'shva', symbol: 'ְ' },
 ];
 
+const getPhoneticTTS = (letter, nikudId) => {
+  // TTS engines pronounce syllables much better when they have mater lectionis (א, ה, ו, י)
+  switch (nikudId) {
+    case 'kamatz': return letter + 'ָה'; // e.g., מָה
+    case 'patach': return letter + 'ַה'; // e.g., מַה
+    case 'tzere': return letter + 'ֵי'; // e.g., מֵי
+    case 'segol': return letter + 'ֶה'; // e.g., מֶה
+    case 'holam': return letter + 'וֹ'; // e.g., מוֹ
+    case 'hirik': return letter + 'ִי'; // e.g., מִי
+    case 'kubutz': return letter + 'וּ'; // Force Shuruk spelling for better U sound
+    case 'shuruk': return letter + 'וּ'; 
+    case 'shva': return letter + 'ְ'; 
+    default: return letter;
+  }
+};
+
 export const generateHavarotPool = (count = 10) => {
   const pool = [];
   for (let i = 0; i < count; i++) {
     const randomLetter = HEBREW_LETTERS_LIST[Math.floor(Math.random() * HEBREW_LETTERS_LIST.length)];
     const randomNikud = NIKUD_SYMBOLS[Math.floor(Math.random() * NIKUD_SYMBOLS.length)];
+    
+    // The symbol the child sees
     const symbol = randomNikud.id === 'shuruk' ? randomLetter + 'וּ' : randomLetter + randomNikud.symbol;
+    
+    // The phonetic string sent to the TTS engine
+    const phoneticSound = getPhoneticTTS(randomLetter, randomNikud.id);
+
     pool.push({
       id: `${randomLetter}-${randomNikud.id}-${i}`, 
       letter: randomLetter,
       nikudId: randomNikud.id,
-      textToSpeech: symbol,
+      textToSpeech: phoneticSound,
       symbol: symbol
     });
   }
@@ -96,10 +118,11 @@ export const generateHavarotOptions = (question) => {
     
   const options = otherNikuds.map((n, idx) => {
     const symbol = n.id === 'shuruk' ? question.letter + 'וּ' : question.letter + n.symbol;
+    const phoneticSound = getPhoneticTTS(question.letter, n.id);
     return {
       id: `${question.letter}-${n.id}-wrong-${idx}`,
       symbol: symbol,
-      textToSpeech: symbol,
+      textToSpeech: phoneticSound,
       letter: question.letter,
       nikudId: n.id
     };
