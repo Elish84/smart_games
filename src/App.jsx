@@ -74,10 +74,13 @@ export default function App() {
   const handleSaveScore = async () => {
     if (!playerName.trim()) return;
     
-    // Disable button to prevent double-click
-    setPlayerName(''); // Optimistic clear
-    await saveScore(playerName.trim(), score, gameMode);
-    openLeaderboard();
+    const nameToSave = playerName.trim();
+    const success = await saveScore(nameToSave, score, gameMode);
+    
+    if (success) {
+      setPlayerName(''); 
+      openLeaderboard();
+    }
   };
 
   const HomeButton = () => (

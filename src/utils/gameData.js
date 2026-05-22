@@ -107,8 +107,11 @@ export const saveScore = async (name, score, gameMode) => {
       gameMode,
       date: new Date().toISOString()
     });
+    return true;
   } catch (error) {
     console.error("Error saving score to Firebase:", error);
+    alert("שגיאה בשמירת התוצאה! ככל הנראה חסרת הרשאה. אנא ודא שהגדרת את ה-Rules ב-Firebase כראוי כפי שהוסבר.");
+    return false;
   }
 };
 
