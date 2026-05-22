@@ -93,13 +93,17 @@ export default function App() {
     if (scores.length === 0) return <p>אין עדיין שיאים!</p>;
     return (
       <ul className="leaderboard-list">
-        {scores.map((s, i) => (
-          <li key={i}>
-            <span className="rank">{i + 1}.</span> 
-            <span className="name">{s.name}</span> 
-            <span className="score">{s.score} נק'</span>
-          </li>
-        ))}
+        {scores.map((s, i) => {
+          const dateStr = s.date ? new Date(s.date).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' }) : '';
+          return (
+            <li key={i}>
+              <span className="rank">{i + 1}.</span> 
+              <span className="name">{s.name}</span> 
+              <span className="score">{s.score} נק'</span>
+              {dateStr && <span className="date" style={{ fontSize: '0.85rem', color: '#718096', marginRight: '10px' }}>{dateStr}</span>}
+            </li>
+          );
+        })}
       </ul>
     );
   };
