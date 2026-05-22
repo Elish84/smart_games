@@ -96,11 +96,13 @@ export default function App() {
         {scores.map((s, i) => {
           const dateStr = s.date ? new Date(s.date).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' }) : '';
           return (
-            <li key={i}>
+            <li key={i} className="leaderboard-item">
               <span className="rank">{i + 1}.</span> 
-              <span className="name">{s.name}</span> 
+              <div className="player-info">
+                <span className="name">{s.name}</span>
+                {dateStr && <span className="date">{dateStr}</span>}
+              </div>
               <span className="score">{s.score} נק'</span>
-              {dateStr && <span className="date" style={{ fontSize: '0.85rem', color: '#718096', marginRight: '10px' }}>{dateStr}</span>}
             </li>
           );
         })}
