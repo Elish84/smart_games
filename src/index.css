@@ -1,0 +1,453 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Rubik', sans-serif;
+  background-color: #f0f8ff; /* AliceBlue */
+  color: #333;
+}
+
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+}
+
+.text-center { text-align: center; }
+.text-green { color: #48bb78; }
+.text-red { color: #f56565; }
+.text-gold { color: #ecc94b; }
+
+.title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #2b6cb0;
+  font-weight: 800;
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: #4a5568;
+}
+
+.icon-large {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+}
+
+.primary-btn {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 15px 40px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+  font-family: inherit;
+}
+
+.primary-btn:hover {
+  background-color: #3182ce;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(66, 153, 225, 0.4);
+}
+
+.primary-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);
+}
+
+/* GameScreen styles */
+.game-container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header-info {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.level-text, .time-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2d3748;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 16px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  transition: width 0.1s linear, background-color 0.3s;
+}
+
+.progress-bar-green { background-color: #48bb78; }
+.progress-bar-yellow { background-color: #ecc94b; }
+.progress-bar-red { background-color: #f56565; }
+
+.question-card {
+  background: white;
+  border-radius: 30px;
+  padding: 40px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  width: 100%;
+  text-align: center;
+  border: 4px solid #ebf8ff;
+  margin-bottom: 20px;
+}
+
+.audio-btn {
+  background: #ebf8ff;
+  border: none;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  font-size: 2.5rem;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.audio-btn:hover {
+  background: #bee3f8;
+  transform: scale(1.05);
+}
+
+.question-title {
+  font-size: 2rem;
+  color: #2d3748;
+  margin-bottom: 30px;
+}
+
+.options-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.remaining-text {
+  font-size: 1.2rem;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+/* OptionButton styles */
+.option-btn {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 20px;
+  font-size: 4rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: Arial, sans-serif; /* Fallback for symbols */
+}
+
+.option-btn-idle {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-bottom-width: 6px;
+  color: #2d3748;
+}
+
+.option-btn-idle:not(:disabled):hover {
+  background: #f7fafc;
+  transform: translateY(-4px);
+  border-bottom-width: 10px;
+}
+
+.option-btn-idle:not(:disabled):active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.option-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.option-btn-correct {
+  background: #48bb78;
+  color: white;
+  border: 2px solid #2f855a;
+  border-bottom-width: 6px;
+  transform: scale(1.1);
+  box-shadow: 0 10px 20px rgba(72, 187, 120, 0.4);
+}
+
+.option-btn-incorrect {
+  background: #f56565;
+  color: white;
+  border: 2px solid #c53030;
+  border-bottom-width: 6px;
+  animation: shake 0.4s;
+}
+
+.option-btn-highlight {
+  background: #48bb78;
+  color: white;
+  border: 2px solid #2f855a;
+  border-bottom-width: 6px;
+  animation: pulse 1s infinite;
+}
+
+/* Animations */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+
+.mode-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.hebrew-btn {
+  background-color: #4299e1;
+}
+
+.english-btn {
+  background-color: #ed8936;
+}
+
+.english-btn:hover {
+  background-color: #dd6b20;
+}
+
+.home-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-btn:hover {
+  background: #e2e8f0;
+  transform: scale(1.1);
+}
+
+.home-btn-small {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-btn-small:hover {
+  background: #e2e8f0;
+  transform: scale(1.1);
+}
+
+/* Score and Prize Styles */
+.score-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #4299e1;
+}
+
+.score-display {
+  font-size: 1.8rem;
+  color: #2b6cb0;
+  font-weight: bold;
+}
+
+.prizes-display {
+  font-size: 2.5rem;
+  margin: 15px 0;
+  letter-spacing: 10px;
+}
+
+.save-score-section {
+  background: #f7fafc;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+  border: 2px dashed #cbd5e0;
+}
+
+.name-input {
+  width: 80%;
+  padding: 12px;
+  font-size: 1.2rem;
+  border: 2px solid #a0aec0;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-family: inherit;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+}
+
+.save-btn {
+  font-size: 1.2rem;
+  padding: 10px 25px;
+  background-color: #48bb78;
+}
+
+.save-btn:hover:not(:disabled) {
+  background-color: #38a169;
+}
+
+.save-btn:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.leaderboard-btn {
+  background-color: #ecc94b;
+  color: #744210;
+}
+
+.leaderboard-btn:hover {
+  background-color: #d69e2e;
+}
+
+/* Leaderboard Styles */
+.leaderboard-card {
+  max-width: 800px;
+}
+
+.leaderboard-container {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.leaderboard-col {
+  flex: 1;
+  background: #f7fafc;
+  border-radius: 15px;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+}
+
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  text-align: right;
+}
+
+.leaderboard-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 1.2rem;
+}
+
+.leaderboard-list li:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-list .rank {
+  font-weight: bold;
+  color: #a0aec0;
+  width: 30px;
+}
+
+.leaderboard-list .name {
+  flex: 1;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.leaderboard-list .score {
+  font-weight: bold;
+  color: #4299e1;
+}
+
+@media (max-width: 600px) {
+  .leaderboard-container {
+    flex-direction: column;
+  }
+}
+
