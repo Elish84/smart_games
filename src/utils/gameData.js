@@ -76,8 +76,24 @@ export const generateHavarotPool = (count = 10) => {
 };
 
 export const generateHavarotOptions = (question) => {
-  // Generate 2 other options with the SAME letter but DIFFERENT nikud
-  const otherNikuds = NIKUD_SYMBOLS.filter(n => n.id !== question.nikudId).sort(() => 0.5 - Math.random()).slice(0, 2);
+  // Map of confusing sounds that shouldn't appear together as wrong options
+  const soundConflicts = {
+    'kamatz': 'patach',
+    'patach': 'kamatz',
+    'tzere': 'segol',
+    'segol': 'tzere',
+    'kubutz': 'shuruk',
+    'shuruk': 'kubutz'
+  };
+
+  const conflictingNikudId = soundConflicts[question.nikudId];
+
+  // Generate 2 other options with the SAME letter but DIFFERENT nikud (and not confusing)
+  const otherNikuds = NIKUD_SYMBOLS
+    .filter(n => n.id !== question.nikudId && n.id !== conflictingNikudId)
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 2);
+    
   const options = otherNikuds.map((n, idx) => {
     const symbol = n.id === 'shuruk' ? question.letter + 'וּ' : question.letter + n.symbol;
     return {
