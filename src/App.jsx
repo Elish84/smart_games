@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GameScreen } from './components/GameScreen';
-import { LEVELS, saveScore, getLeaderboard, LEVEL_PRIZES } from './utils/gameData';
+import { LEVELS, saveScore, getLeaderboard, LEVEL_PRIZES, getPlayerRank } from './utils/gameData';
 import './index.css';
 
 export default function App() {
@@ -15,6 +15,7 @@ export default function App() {
   // Leaderboard state
   const [leaderboards, setLeaderboards] = useState({ hebrew: [], english: [], havarot: [] });
   const [isLoadingScores, setIsLoadingScores] = useState(false);
+  const [playerRank, setPlayerRank] = useState(null);
 
   const startGame = (mode) => {
     setGameMode(mode);
@@ -25,12 +26,16 @@ export default function App() {
     setGameState('playing');
   };
 
-  const handleLevelComplete = () => {
+  const handleLevelComplete = async () => {
     const newPrize = LEVEL_PRIZES[currentLevel - 1] || '🌟';
     setPrizes(prev => [...prev, newPrize]);
 
     if (currentLevel >= LEVELS.length) {
       setGameState('win');
+      if (score > 0) {
+        const rank = await getPlayerRank(score, gameMode);
+        setPlayerRank(rank);
+      }
     } else {
       setGameState('levelup');
     }
@@ -41,8 +46,12 @@ export default function App() {
     setGameState('playing');
   };
 
-  const handleGameOver = () => {
+  const handleGameOver = async () => {
     setGameState('gameover');
+    if (score > 0) {
+      const rank = await getPlayerRank(score, gameMode);
+      setPlayerRank(rank);
+    }
   };
 
   const goHome = () => {
@@ -142,6 +151,11 @@ export default function App() {
     return (
       <div className="save-score-section">
         <h3 className="text-xl font-bold mb-2">השיא שלך: {score} נקודות!</h3>
+        {playerRank && (
+          <p className="rank-prediction mb-2 text-gold font-bold" style={{fontSize: '1.1rem', margin: '10px 0'}}>
+            מיקומך בטבלה הכללית: {playerRank}
+          </p>
+        )}
         {prizes.length > 0 && (
           <div className="prizes-display">
             הפרסים שצברת: {prizes.join(' ')}

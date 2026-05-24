@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, limit, where, getCountFromServer } from 'firebase/firestore';
 import { db } from './firebase';
 
 export const NIKUD_LIST = [
@@ -14,32 +14,32 @@ export const NIKUD_LIST = [
 ];
 
 export const ENGLISH_LIST = [
-  { id: 'a', textToSpeech: 'a', symbol: 'a' },
-  { id: 'b', textToSpeech: 'b', symbol: 'b' },
-  { id: 'c', textToSpeech: 'c', symbol: 'c' },
-  { id: 'd', textToSpeech: 'd', symbol: 'd' },
-  { id: 'e', textToSpeech: 'e', symbol: 'e' },
-  { id: 'f', textToSpeech: 'f', symbol: 'f' },
-  { id: 'g', textToSpeech: 'g', symbol: 'g' },
-  { id: 'h', textToSpeech: 'h', symbol: 'h' },
-  { id: 'i', textToSpeech: 'i', symbol: 'i' },
-  { id: 'j', textToSpeech: 'j', symbol: 'j' },
-  { id: 'k', textToSpeech: 'k', symbol: 'k' },
-  { id: 'l', textToSpeech: 'l', symbol: 'l' },
-  { id: 'm', textToSpeech: 'm', symbol: 'm' },
-  { id: 'n', textToSpeech: 'n', symbol: 'n' },
-  { id: 'o', textToSpeech: 'o', symbol: 'o' },
-  { id: 'p', textToSpeech: 'p', symbol: 'p' },
-  { id: 'q', textToSpeech: 'q', symbol: 'q' },
-  { id: 'r', textToSpeech: 'r', symbol: 'r' },
-  { id: 's', textToSpeech: 's', symbol: 's' },
-  { id: 't', textToSpeech: 't', symbol: 't' },
-  { id: 'u', textToSpeech: 'u', symbol: 'u' },
-  { id: 'v', textToSpeech: 'v', symbol: 'v' },
-  { id: 'w', textToSpeech: 'w', symbol: 'w' },
-  { id: 'x', textToSpeech: 'x', symbol: 'x' },
-  { id: 'y', textToSpeech: 'y', symbol: 'y' },
-  { id: 'z', textToSpeech: 'z', symbol: 'z' },
+  { id: 'a', textToSpeech: 'a, apple', symbol: 'a' },
+  { id: 'b', textToSpeech: 'b, bear', symbol: 'b' },
+  { id: 'c', textToSpeech: 'c, cat', symbol: 'c' },
+  { id: 'd', textToSpeech: 'd, dog', symbol: 'd' },
+  { id: 'e', textToSpeech: 'e, elephant', symbol: 'e' },
+  { id: 'f', textToSpeech: 'f, frog', symbol: 'f' },
+  { id: 'g', textToSpeech: 'g, giraffe', symbol: 'g' },
+  { id: 'h', textToSpeech: 'h, horse', symbol: 'h' },
+  { id: 'i', textToSpeech: 'i, ice cream', symbol: 'i' },
+  { id: 'j', textToSpeech: 'j, juice', symbol: 'j' },
+  { id: 'k', textToSpeech: 'k, kangaroo', symbol: 'k' },
+  { id: 'l', textToSpeech: 'l, lion', symbol: 'l' },
+  { id: 'm', textToSpeech: 'm, monkey', symbol: 'm' },
+  { id: 'n', textToSpeech: 'n, nest', symbol: 'n' },
+  { id: 'o', textToSpeech: 'o, orange', symbol: 'o' },
+  { id: 'p', textToSpeech: 'p, penguin', symbol: 'p' },
+  { id: 'q', textToSpeech: 'q, queen', symbol: 'q' },
+  { id: 'r', textToSpeech: 'r, rabbit', symbol: 'r' },
+  { id: 's', textToSpeech: 's, sun', symbol: 's' },
+  { id: 't', textToSpeech: 't, tiger', symbol: 't' },
+  { id: 'u', textToSpeech: 'u, umbrella', symbol: 'u' },
+  { id: 'v', textToSpeech: 'v, violin', symbol: 'v' },
+  { id: 'w', textToSpeech: 'w, whale', symbol: 'w' },
+  { id: 'x', textToSpeech: 'x, xylophone', symbol: 'x' },
+  { id: 'y', textToSpeech: 'y, yellow', symbol: 'y' },
+  { id: 'z', textToSpeech: 'z, zebra', symbol: 'z' },
 ];
 
 export const HEBREW_LETTERS_LIST = [
@@ -158,7 +158,7 @@ export const getLeaderboard = async (gameMode) => {
     const q = query(
       collection(db, `leaderboard_${gameMode}`),
       orderBy('score', 'desc'),
-      limit(10)
+      limit(5)
     );
     const querySnapshot = await getDocs(q);
     const leaderboard = [];
@@ -169,6 +169,21 @@ export const getLeaderboard = async (gameMode) => {
   } catch (error) {
     console.error("Error getting leaderboard:", error);
     return [];
+  }
+};
+
+export const getPlayerRank = async (score, gameMode) => {
+  try {
+    const q = query(
+      collection(db, `leaderboard_${gameMode}`),
+      where('score', '>', score)
+    );
+    const snapshot = await getCountFromServer(q);
+    // Position is number of scores higher than this one, plus 1
+    return snapshot.data().count + 1;
+  } catch (error) {
+    console.error("Error getting player rank:", error);
+    return null;
   }
 };
 
